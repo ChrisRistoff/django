@@ -1,0 +1,27 @@
+#the version of docker compose syntax
+version: "3.3"
+
+
+services:
+  #name of the service
+  app:
+    
+    #building docker file inside current directory
+    build:
+      context: .
+      #if we're running using docker compose for requirements.dev.txt
+      args:
+        - DEV=true
+
+    #maps port 8000 to port 8000 inside the container
+    #this is how we access the network when we want to connect to our server
+    ports:
+      - "8000:8000"
+    
+    #mapping directories from system to container
+    #the updates will be reflected in the running container in real time
+    volumes:
+      - ./app:/app
+
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
