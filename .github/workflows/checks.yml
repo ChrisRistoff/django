@@ -1,0 +1,38 @@
+---
+name: Checks
+
+on: [push]
+
+jobs:
+  test-lint:
+    
+    #name we'll see in actions
+    name: Test and Lint
+
+    #the operating system we'll run the job on
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - name: Login to Docker Hub
+        
+        #allows us to reuse actions
+        #this action is used to login to docker. the @ symbol specifies the version
+        uses: docker/login-action@v1
+
+        #passing the parameters for the action
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+        #next  step if login is succesful
+        #Checkout cheks our code out inside the job
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+        #running the unit tests
+      - name: Test
+        run: docker-compose run --rm app sh -c "python manage.py test"
+
+      #the linter I set up in requirements.dev.txt and use in Dockerfile
+      - name: Lint
+        run: docker-compose run --rm app sh -c "flake8"
