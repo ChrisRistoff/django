@@ -25,3 +25,35 @@ services:
 
     command: >
       sh -c "python manage.py runserver 0.0.0.0:8000"
+    
+    #set configuration values for the database connection.
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+
+    #ensure that the "db" service starts before this service.
+    depends_on:
+      - db
+
+  db:
+    #define a Docker container for a PostgreSQL database 
+    #using the official "postgres" image
+    image: postgres:13-alpine
+
+    #save the database data in a separate place, 
+    #so it doesn't get lost when the container is restarted.
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+
+    #Set environment variables for the PostgreSQL database name, username, and password.
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=changeme
+
+#create a storage location for the database data to be saved between container restarts.
+volumes:
+  dev-db-data:
+
