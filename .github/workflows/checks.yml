@@ -31,7 +31,7 @@ jobs:
         
         #running the unit tests
       - name: Test
-        run: docker-compose run --rm app sh -c "python manage.py test"
+        run: docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py test"
 
       #the linter I set up in requirements.dev.txt and use in Dockerfile
       - name: Lint
