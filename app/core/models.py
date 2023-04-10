@@ -36,6 +36,22 @@ class UserManager(BaseUserManager):
 
         return user
 
+    def create_superuser(self, email, password):
+        '''create and save a new superuser with given details'''
+        user = self.create_user(email, password)
+
+        # is_superuser comes with django
+        # used to check if the user is a superuser
+        user.is_superuser = True
+
+        # is_staff comes with django
+        # check if the user is a staff member or not
+        user.is_staff = True
+
+        user.save(using=self._db)
+
+        return user
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     '''user in the system'''
