@@ -9,7 +9,7 @@ from rest_framework import serializers
 class UserSerializer(serializers.ModelSerializer):
     ''' serializer for the user object '''
 
-    # Meta class is used to define the model and the fields to be used in the serializer
+    # Meta class is used to define the model and the fields to be used
     class Meta:
 
         model = get_user_model()
