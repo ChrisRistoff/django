@@ -9,10 +9,17 @@ from rest_framework.test import APIClient
 
 from core.models import Recipe
 
-from recipe.serializers import RecipeSerializer
+from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 
 # url for the recipe API
 RECIPES_URL = reverse('recipe:recipe-list')
+
+
+def detail_url(recipe_id):
+    ''' return the recipe detail url '''
+
+    # return the url for the recipe detail
+    return reverse('recipe:recipe-detail', args=[recipe_id])
 
 
 def create_recipe(user, **params):
@@ -114,3 +121,49 @@ class PrivateRecipeApiTests(TestCase):
 
         # assert that the response data is the same as the serialized data
         self.assertEqual(res.data, serializer.data)
+
+    def test_get_recipe_detail(self):
+        ''' test retrieving a recipe detail '''
+
+        # create a recipe
+        recipe = create_recipe(user=self.user)
+
+        # get the recipe detail url
+        url = detail_url(recipe.id)
+
+        # get the recipe detail url
+        res = self.client.get(url)
+
+        # serialize the recipe
+        serializer = RecipeDetailSerializer(recipe)
+
+        # assert that the status code is 200
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        # assert that the response data is the same as the serialized data
+        self.assertEqual(res.data, serializer.data)
+
+    def test_create_recipe(self):
+        ''' test creating a recipe '''
+
+        payload = {
+            'title': 'Chocolate cheesecake',
+            'time_minutes': 30,
+            'description': 'Delicious cheesecake',
+            'link': 'http://test.com/recipe.pdf',
+        }
+
+        # post the payload to the recipes url
+        res = self.client.post(RECIPES_URL, payload)
+
+        # assert that the status code is 201
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        # get the Recipe
+        recipe = Recipe.objects.get(id=res.data['id'])
+
+        # assert that each field is the same as the payload
+        for k, v in payload.items():
+            self.assertEqual(getattr(recipe, k), v)
+
+        self.assertEqual(recipe.user, self.user)
