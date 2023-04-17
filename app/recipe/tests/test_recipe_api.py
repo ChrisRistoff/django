@@ -164,6 +164,8 @@ class PrivateRecipeApiTests(TestCase):
 
         # assert that each field is the same as the payload
         for k, v in payload.items():
+
+            # getattr() returns the value of the named attribute of an object
             self.assertEqual(getattr(recipe, k), v)
 
         self.assertEqual(recipe.user, self.user)
