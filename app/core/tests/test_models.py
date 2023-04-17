@@ -3,6 +3,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+from core import models
 
 class ModelTests(TestCase):
 
@@ -54,3 +55,23 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_create_recipe(self):
+        ''' test creating a recipe '''
+
+        # create a User
+        user = get_user_model().object.create_user(
+            'test@test.com',
+            'test123',
+        )
+
+        # create a Recipe
+        recipe = models.Recipe.objects.create(
+            user=user,
+            title='Steak and mushroom sauce',
+            time_minutes=5,
+            description='How to make a delicious steak and mushroom sauce',
+        )
+
+        # check that the recipe has been created
+        self.assertEqual(str(recipe), recipe.title)

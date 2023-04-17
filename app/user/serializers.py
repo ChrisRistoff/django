@@ -50,6 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
+
 class AuthTokenSerializer(serializers.Serializer):
     ''' serializer for the user authentication object '''
 
