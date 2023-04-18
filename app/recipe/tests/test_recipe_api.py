@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Recipe
+from core.models import Recipe, Tag
 
 from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 
@@ -169,3 +169,74 @@ class PrivateRecipeApiTests(TestCase):
             self.assertEqual(getattr(recipe, k), v)
 
         self.assertEqual(recipe.user, self.user)
+
+    def test_create_recipe_with_tags(self):
+        ''' test creating a recipe with tags '''
+
+        # create a Tag
+        tag1 = Tag.objects.create(user=self.user, name='Vegan')
+        tag2 = Tag.objects.create(user=self.user, name='Dessert')
+
+        payload = {
+            'title': 'Avocado lime cheesecake',
+            'time_minutes': 60,
+            'description': 'Delicious cheesecake',
+            'link': 'http://test.com/recipe.pdf',
+            'tags': [{'name': 'Vegan'}, {'name': 'Dessert'}],
+        }
+
+        # post the payload to the recipes url
+        res = self.client.post(RECIPES_URL, payload, format='json')
+
+        # assert that the status code is 201
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        # get the Recipe
+        recipes = Recipe.objects.filter(user=self.user)
+        self.assertEqual(recipes.count(), 1)
+
+        recipe = recipes[0]
+        self.assertEqual(recipe.tags.count(), 2)
+
+        # assert that the tags are the same as the payload
+        for tag in payload['tags']:
+            exists = recipe.tags.filter(
+                user=self.user,
+                name=tag['name']
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_recipe_with_existing_tags(self):
+        ''' test creating a recipe with existing tags '''
+
+        # create a Tag
+        tag = Tag.objects.create(user=self.user, name='Vegan')
+
+        payload = {
+            'title': 'Avocado lime cheesecake',
+            'time_minutes': 60,
+            'description': 'Delicious cheesecake',
+            'link': 'http://test.com/recipe.pdf',
+            'tags': [{'name': 'Vegan'}, {'name': 'Dessert'}],
+        }
+
+        # post the payload to the recipes url
+        res = self.client.post(RECIPES_URL, payload, format='json')
+
+        # assert that the status code is 201
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        # get the Recipe
+        recipes = Recipe.objects.filter(user=self.user)
+        self.assertEqual(recipes.count(), 1)
+
+        recipe = recipes[0]
+        self.assertEqual(recipe.tags.count(), 2)
+
+        # assert that the tags are the same as the payload
+        for tag in payload['tags']:
+            exists = recipe.tags.filter(
+                user=self.user,
+                name=tag['name']
+            ).exists()
+            self.assertTrue(exists)
