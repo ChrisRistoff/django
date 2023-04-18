@@ -8,6 +8,7 @@ from recipe import views
 # this will automatically create the urls for the viewset
 router = DefaultRouter()
 router.register('recipes', views.RecipeViewSet)
+router.register('tags', views.TagViewSet)
 
 # the app Name
 app_name = 'recipe'

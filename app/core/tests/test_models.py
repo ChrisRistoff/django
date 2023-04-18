@@ -85,9 +85,12 @@ class ModelTests(TestCase):
     def test_create_tag(self):
         ''' test creating a tag '''
 
+        # create a User
+        user = create_user()
+
         # create a Tag
         tag = models.Tag.objects.create(
-            user=create_user(),
+            user=user,
             name='Vegetarian',
         )
 
