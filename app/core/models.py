@@ -91,6 +91,22 @@ class Recipe(models.Model):
     description = models.TextField(blank=True)
     time_minutes = models.IntegerField()
     link = models.CharField(max_length=255, blank=True)
+    tag = models.ManyToManyField('Tag')
 
     def __str__(self):
         return self.title
+
+
+class Tag(models.Model):
+    ''' tag to ecused for a recipe '''
+
+    # the user that created the Tag
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
