@@ -174,8 +174,8 @@ class PrivateRecipeApiTests(TestCase):
         ''' test creating a recipe with tags '''
 
         # create a Tag
-        tag1 = Tag.objects.create(user=self.user, name='Vegan')
-        tag2 = Tag.objects.create(user=self.user, name='Dessert')
+        Tag.objects.create(user=self.user, name='Vegan')
+        Tag.objects.create(user=self.user, name='Dessert')
 
         payload = {
             'title': 'Avocado lime cheesecake',
@@ -240,3 +240,62 @@ class PrivateRecipeApiTests(TestCase):
                 name=tag['name']
             ).exists()
             self.assertTrue(exists)
+
+    def test_create_tag_on_update(self):
+        ''' test creating a new tag on update '''
+
+        # create a recipe
+        recipe = create_recipe(user=self.user)
+
+        payload = {'tags': [{'name': 'Vegan'}, {'name': 'Dessert'}]}
+
+        # get the recipe detail url
+        url = detail_url(recipe.id)
+
+        # patch the payload to the recipe detail url
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        new_tag = Tag.objects.get(user=self.user, name='Dessert')
+        self.assertIn(new_tag, recipe.tags.all())
+
+    def test_update_recipe_assing_tags(self):
+        ''' test assigning an existing tag when creating a recipe'''
+
+        tag_breakfast = Tag.objects.create(user=self.user, name='Breakfast')
+
+        # create a Recipe
+        recipe = create_recipe(user=self.user)
+
+        # add a tag to the Recipe
+        recipe.tags.add(tag_breakfast)
+
+        # create a new tag
+        tag_lunch = Tag.objects.create(user=self.user, name='Lunch')
+
+        payload = {'tags': [{'name': 'Lunch'}]}
+
+        url = detail_url(recipe.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(tag_lunch, recipe.tags.all())
+        self.assertNotIn(tag_breakfast, recipe.tags.all())
+
+    def test_clear_recipe_tags(self):
+        ''' test clearing a recipe tags '''
+
+        tag = Tag.objects.create(user=self.user, name='Breakfast')
+
+        recipe = create_recipe(user=self.user)
+        recipe.tags.add(tag)
+
+        payload = {'tags': []}
+
+        url = detail_url(recipe.id)
+
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(recipe.tags.count(), 0)

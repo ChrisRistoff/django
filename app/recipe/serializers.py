@@ -39,17 +39,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         # read only
         read_only_fields = ('id',)
 
-    def create(self, validated_data):
-        ''' create a new recipe '''
-
-        # remove the tags from the validated data and
-        # assign it to the tags variable so we can add it to the recipe
-        tags = validated_data.pop('tags', [])
-
-        # create the recipe excluding the tags
-        recipe = Recipe.objects.create(**validated_data)
-
-        # auth_user is the authenticated user that is creating the recipe
+    def _get_or_create_tags(self, tags, recipe):
+        ''' handle getting or creating tags '''
         auth_user = self.context['request'].user
 
         for tag in tags:
@@ -61,7 +52,35 @@ class RecipeSerializer(serializers.ModelSerializer):
             # add the tag to the recipe
             recipe.tags.add(tag_obj)
 
+    def create(self, validated_data):
+        ''' create a new recipe '''
+
+        # remove the tags from the validated data and
+        # assign it to the tags variable so we can add it to the recipe
+        tags = validated_data.pop('tags', [])
+
+        # create the recipe excluding the tags
+        recipe = Recipe.objects.create(**validated_data)
+
+        self._get_or_create_tags(tags, recipe)
+
+        # auth_user is the authenticated user that is creating the recipe
         return recipe
+
+    def update(self, instance, validated_data):
+        ''' update a recipe '''
+
+        tags = validated_data.pop('tags', None)
+
+        if tags is not None:
+            instance.tags.clear()
+            self._get_or_create_tags(tags, instance)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 class RecipeDetailSerializer(RecipeSerializer):
