@@ -72,7 +72,8 @@ class TagViewSet(viewsets.GenericViewSet,
         return self.queryset.filter(user=self.request.user).order_by('-name')
 
 
-class IngredientViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class IngredientViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
+                        mixins.UpdateModelMixin):
     ''' view for manage ingredients API '''
 
     # serialize the model data
