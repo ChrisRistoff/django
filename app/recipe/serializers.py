@@ -30,6 +30,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     # so we need to specify the serializer to use
     # for the tags field and set the many to True
     tags = RecipeTagSerializer(many=True, required=False)
+    ingredients = IngredientSerializer(many=True, required=False)
 
     class Meta:
 
@@ -43,6 +44,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'link',
             'description',
             'tags',
+            'ingredients',
         )
 
         # read only
@@ -61,17 +63,32 @@ class RecipeSerializer(serializers.ModelSerializer):
             # add the tag to the recipe
             recipe.tags.add(tag_obj)
 
+    def _get_or_create_ingredients(self, ingredients, recipe):
+        ''' handle getting or creating ingredients '''
+        auth_user = self.context['request'].user
+
+        for ingredient in ingredients:
+            ingredient_obj, created = Ingredient.objects.get_or_create(
+                user=auth_user,
+                **ingredient
+            )
+
+            # add the ingredient to the recipe
+            recipe.ingredients.add(ingredient_obj)
+
     def create(self, validated_data):
         ''' create a new recipe '''
 
         # remove the tags from the validated data and
         # assign it to the tags variable so we can add it to the recipe
         tags = validated_data.pop('tags', [])
+        ingredients = validated_data.pop('ingredients', [])
 
         # create the recipe excluding the tags
         recipe = Recipe.objects.create(**validated_data)
 
         self._get_or_create_tags(tags, recipe)
+        self._get_or_create_ingredients(ingredients, recipe)
 
         # auth_user is the authenticated user that is creating the recipe
         return recipe
