@@ -48,39 +48,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class TagViewSet(viewsets.GenericViewSet,
-                 mixins.ListModelMixin,
-                 mixins.UpdateModelMixin,
-                 mixins.DestroyModelMixin):
-
-    ''' view for manage tags API '''
-
-    # serialize the model data
-    serializer_class = serializers.RecipeTagSerializer
-
-    # the queryset variable is the queryset for the model
-    queryset = Tag.objects.all()
-
-    # will require the user to be authenticated to access the API
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
-        ''' return the tags for the authenticated user '''
-
-        # filter the queryset by the user and order by the id descending
-        return self.queryset.filter(user=self.request.user).order_by('-name')
-
-
-class IngredientViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
-                        mixins.UpdateModelMixin, mixins.DestroyModelMixin):
-    ''' view for manage ingredients API '''
-
-    # serialize the model data
-    serializer_class = serializers.IngredientSerializer
-
-    # the queryset variable is the queryset for the model
-    queryset = Ingredient.objects.all()
+class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
+                            mixins.UpdateModelMixin,
+                            mixins.DestroyModelMixin):
+    ''' base view for manage recipe attributes '''
 
     # will require the user to be authenticated to access the API
     authentication_classes = (TokenAuthentication,)
@@ -91,3 +62,24 @@ class IngredientViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
 
         # filter the queryset by the user and order by the id descending
         return self.queryset.filter(user=self.request.user).order_by('-name')
+
+
+class TagViewSet(BaseRecipeAttrViewSet):
+
+    ''' view for manage tags API '''
+
+    # serialize the model data
+    serializer_class = serializers.RecipeTagSerializer
+
+    # the queryset variable is the queryset for the model
+    queryset = Tag.objects.all()
+
+
+class IngredientViewSet(BaseRecipeAttrViewSet):
+    ''' view for manage ingredients API '''
+
+    # serialize the model data
+    serializer_class = serializers.IngredientSerializer
+
+    # the queryset variable is the queryset for the model
+    queryset = Ingredient.objects.all()
