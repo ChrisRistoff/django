@@ -38,13 +38,13 @@ RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
 
     #install postgresql client
-    apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache postgresql-client jpeg-dev && \
 
     #install build-base postgresql-dev musl-dev
     apk add --update --no-cache --virtual .tmp-build-deps \
     
     #build-base = gcc, g++, make
-        build-base postgresql-dev musl-dev && \
+        build-base postgresql-dev musl-dev zlib zlib-dev && \
     
     #install requirements
     /py/bin/pip install -r /tmp/requirements.txt && \
@@ -70,7 +70,18 @@ RUN python -m venv /py && \
 	--no-create-home\
 	
 	#django-user = username can be anything we want even a variable
-	django-user
+	django-user && \
+
+    #create media folder and static folder
+    mkdir -p /vol/web/media && \
+    mkdir -p /vol/web/static && \
+
+    #change the owner of the media folder and static folder to django-user
+    chown -R django-user:django-user /vol && \
+
+    #change the permissions of the media folder and static folder to 755
+    # 755 = read, write, execute
+    chmod -R 755 /vol
 
 # specify the PATH to the virtual environment
 ENV PATH="/py/bin:$PATH"

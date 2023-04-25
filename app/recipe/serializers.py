@@ -43,6 +43,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'time_minutes',
             'link',
             'description',
+            'instructions',
             'tags',
             'ingredients',
         )

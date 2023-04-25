@@ -22,6 +22,7 @@ services:
     #the updates will be reflected in the running container in real time
     volumes:
       - ./app:/app
+      - dev-static-data:/vol/web
 
     command: >
       sh -c "python manage.py wait_for_db &&
@@ -58,4 +59,4 @@ services:
 #create a storage location for the database data to be saved between container restarts.
 volumes:
   dev-db-data:
-
+  dev-static-data:

@@ -91,6 +91,7 @@ class Recipe(models.Model):
     description = models.TextField(blank=True)
     time_minutes = models.IntegerField()
     link = models.CharField(max_length=255, blank=True)
+    instructions = models.TextField(blank=True)
     tags = models.ManyToManyField('Tag')
     ingredients = models.ManyToManyField('Ingredient')
 
