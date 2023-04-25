@@ -103,6 +103,9 @@ class Recipe(models.Model):
     time_minutes = models.IntegerField()
     link = models.CharField(max_length=255, blank=True)
     instructions = models.TextField(blank=True)
+
+    # upload_to is a function that will be called when an image is uploaded
+    # uses the function to generate the path to the image
     image = models.ImageField(null=True, upload_to=recipe_image_file_path)
     tags = models.ManyToManyField('Tag')
     ingredients = models.ManyToManyField('Ingredient')

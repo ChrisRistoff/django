@@ -1,8 +1,10 @@
 ''' views for the recipe APIs '''
 
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from core.models import Recipe, Tag, Ingredient
 from recipe import serializers
@@ -37,6 +39,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return serializers.RecipeDetailSerializer
 
+        elif self.action == 'upload_image':
+            return serializers.RecipeImageSerializer
+
         # default serializer class
         return self.serializer_class
 
@@ -46,6 +51,41 @@ class RecipeViewSet(viewsets.ModelViewSet):
         # modify the behavior of the create method to set the user
         # to the authenticated user before saving the object to the database
         serializer.save(user=self.request.user)
+
+    # create a custom action for the viewset to upload an image
+    # we use method POST to upload the image and the detail=True
+    # to specify that the action is for a single object
+    # the url_path is the url to access the action
+    @action(methods=['POST'], detail=True, url_path='upload-image')
+    # the pk is the primary key of the object
+    # the request is the request object
+    # pk is the primary key of the object to upload the image
+    def upload_image(self, request, pk=None):
+        ''' upload an image to a recipe '''
+
+        # get the recipe object
+        recipe = self.get_object()
+
+        # get the serializer class
+        serializer = self.get_serializer(
+            recipe,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            # save the serializer
+            serializer.save()
+
+            # return the serializer data
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
