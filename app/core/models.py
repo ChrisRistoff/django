@@ -1,6 +1,8 @@
 '''
 database models
 '''
+import uuid
+import os
 
 from django.conf import settings
 from django.db import models  # noqa
@@ -9,6 +11,15 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+
+
+def recipe_image_file_path(instance, filename):
+    ''' generate file path for new recipe image '''
+    ext = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{ext}'
+
+    # return the path as a string
+    return os.path.join('uploads', 'recipe', filename)
 
 
 # UserManager is a class that comes with django
@@ -92,6 +103,7 @@ class Recipe(models.Model):
     time_minutes = models.IntegerField()
     link = models.CharField(max_length=255, blank=True)
     instructions = models.TextField(blank=True)
+    image = models.ImageField(null=True, upload_to=recipe_image_file_path)
     tags = models.ManyToManyField('Tag')
     ingredients = models.ManyToManyField('Ingredient')
 
