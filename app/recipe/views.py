@@ -17,6 +17,23 @@ from core.models import Recipe, Tag, Ingredient
 from recipe import serializers
 
 
+# extend the schema for the view set
+# to add the tags and ingredients parameters for filtering
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                'tags',
+                OpenApiTypes.STR,
+                description='Comma separated list of IDs to filter',
+                ),
+            OpenApiParameter(
+                'ingredients',
+                OpenApiTypes.STR,
+                description='Comma separated list of ingredient IDs to filter',
+                ),
+        ])
+    )
 # the model view set is a class that provides the basic CRUD operations
 # for a model in the database
 class RecipeViewSet(viewsets.ModelViewSet):
