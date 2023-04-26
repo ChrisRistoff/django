@@ -42,6 +42,7 @@ def create_recipe(user, **params):
         'time_minutes': 10,
         'description': 'Sample description',
         'link': 'http://test.com/recipe.pdf',
+        'instructions': 'Sample instructions',
     }
 
     # update the defaults with the params
@@ -163,6 +164,7 @@ class PrivateRecipeApiTests(TestCase):
             'time_minutes': 30,
             'description': 'Delicious cheesecake',
             'link': 'http://test.com/recipe.pdf',
+            'instructions': 'Sample instructions',
         }
 
         # post the payload to the recipes url
@@ -440,6 +442,78 @@ class PrivateRecipeApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(recipe.ingredients.count(), 0)
+
+    def test_filter_by_tags(self):
+        ''' test returning recipes with specific tags '''
+
+        # create recipes
+        recipe1 = create_recipe(user=self.user, title='Thai vegetable curry')
+        recipe2 = create_recipe(user=self.user, title='Aubergine with tahini')
+
+        # create tags
+        tag1 = Tag.objects.create(user=self.user, name='Vegan')
+        tag2 = Tag.objects.create(user=self.user, name='Vegetarian')
+
+        # assign tags to recipes
+        recipe1.tags.add(tag1)
+        recipe2.tags.add(tag2)
+
+        # create a Recipe without tags
+        recipe3 = create_recipe(user=self.user, title='Fish and chips')
+
+        # get the recipes with the Vegan Tag
+        res = self.client.get(
+            RECIPES_URL,
+            {'tags': f'{tag1.id},{tag2.id}'}
+        )
+
+        # serialize the Recipes
+        serializer1 = RecipeSerializer(recipe1)
+        serializer2 = RecipeSerializer(recipe2)
+        serializer3 = RecipeSerializer(recipe3)
+
+        # test that the recipes with Tags are in the response
+        # and the recipe without Tags is not in the response
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
+
+    def test_filter_by_ingredients(self):
+        ''' test returning recipes with specific ingredients '''
+
+        # create Recipes
+        recipe1 = create_recipe(user=self.user, title='Posh beans on toast')
+        recipe2 = create_recipe(user=self.user, title='Chicken cacciatore')
+
+        # create Ingredients
+        ingredient1 = Ingredient.objects.create(
+            user=self.user, name='Feta cheese')
+        ingredient2 = Ingredient.objects.create(
+            user=self.user, name='Chicken')
+
+        # assign Ingredients to Recipes
+        recipe1.ingredients.add(ingredient1)
+        recipe2.ingredients.add(ingredient2)
+
+        # create a Recipe without Ingredients
+        recipe3 = create_recipe(user=self.user, title='Steak and mushrooms')
+
+        # get the recipes with the Ingredients
+        res = self.client.get(
+            RECIPES_URL,
+            {'ingredients': f'{ingredient1.id},{ingredient2.id}'}
+        )
+
+        # serialize the Recipes
+        serializer1 = RecipeSerializer(recipe1)
+        serializer2 = RecipeSerializer(recipe2)
+        serializer3 = RecipeSerializer(recipe3)
+
+        # test that the recipes with Ingredients are in the response
+        # and the recipe without Ingredients is not in the response
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
 
 
 class RecipeImageUploadTests(TestCase):

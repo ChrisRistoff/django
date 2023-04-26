@@ -46,6 +46,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'instructions',
             'tags',
             'ingredients',
+            'image',
         )
 
         # read only
@@ -124,7 +125,7 @@ class RecipeDetailSerializer(RecipeSerializer):
         model = Recipe
 
         # fields to be serialized
-        fields = RecipeSerializer.Meta.fields + ('description',)
+        fields = RecipeSerializer.Meta.fields + ('description', 'image',)
 
 
 class RecipeImageSerializer(serializers.ModelSerializer):
