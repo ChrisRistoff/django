@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Tag
+from core.models import Tag, Recipe
 
 from recipe.serializers import RecipeTagSerializer
 
@@ -127,3 +127,58 @@ class PrivateTagsApiTests(TestCase):
         exists = Tag.objects.filter(id=tag.id).exists()
 
         self.assertFalse(exists)
+
+    def test_filter_tags_assigned(self):
+        ''' test filtering tags by those assigned to recipes '''
+
+        # create TAGS
+        tag1 = Tag.objects.create(user=self.user, name="Vegan")
+        tag2 = Tag.objects.create(user=self.user, name="Meat")
+
+        # create a Recipe
+        recipe = Recipe.objects.create(
+                title="Coriander eggs on toast",
+                time_minutes=10,
+                user=self.user
+                )
+
+        # assign tag1 to the Recipe
+        recipe.tags.add(tag1)
+
+        # get the tags from the API and store them in res
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        # serialize the tags and store them in serializer
+        serializer1 = RecipeTagSerializer(tag1)
+        serializer2 = RecipeTagSerializer(tag2)
+
+        self.assertIn(serializer1.data, res.data)
+        self.assertNotIn(serializer2.data, res.data)
+
+    def test_filter_tags_unique(self):
+        ''' test filtered tags are unique '''
+
+        # create TAGS
+        tag1 = Tag.objects.create(user=self.user, name="Vegan")
+        Tag.objects.create(user=self.user, name="Meat")
+
+        # create Recipes
+        recipe1 = Recipe.objects.create(
+                title="Coriander eggs on toast",
+                time_minutes=10,
+                user=self.user
+                )
+        recipe2 = Recipe.objects.create(
+                title="Coriander eggs on toast",
+                time_minutes=10,
+                user=self.user
+                )
+
+        # assign tags to the Recipes
+        recipe1.tags.add(tag1)
+        recipe2.tags.add(tag1)
+
+        # get the tags from the API and store them in res
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        self.assertEqual(len(res.data), 1)

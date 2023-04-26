@@ -139,6 +139,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                'assigned_only',
+                # the type is integer
+                # enum is a list of possible values
+                OpenApiTypes.INT, enum=[0, 1],
+                description='Filter by items assigned to recipes',
+                ),
+        ])
+    )
 class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
                             mixins.UpdateModelMixin,
                             mixins.DestroyModelMixin):
@@ -151,8 +163,23 @@ class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
     def get_queryset(self):
         ''' return the ingredients for the authenticated user '''
 
-        # filter the queryset by the user and order by the id descending
-        return self.queryset.filter(user=self.request.user).order_by('-name')
+        # get the assigned_only parameter from the request
+        # if the parameter is not present, the default value is 0
+        assigned_only = bool(
+            int(self.request.query_params.get('assigned_only', 0))
+        )
+
+        # get the queryset for the model
+        queryset = self.queryset
+
+        # filter the queryset by the tags and ingredients
+        if assigned_only:
+            # filter the queryset by the tags and ingredients
+            queryset = queryset.filter(recipe__isnull=False)
+
+        # else filter the queryset by the user and order by the id descending
+        return queryset.filter(
+                user=self.request.user).order_by('-name').distinct()
 
 
 class TagViewSet(BaseRecipeAttrViewSet):
