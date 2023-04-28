@@ -17,6 +17,7 @@ ENV PYTHONUNBUFFERED 1
 #tell docker to copy the requirements.dev.txt to the tmp folder
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+COPY ./scripts /scripts
 #this is the app folder
 COPY ./app /app
 #tell docker where to run the commands
@@ -44,7 +45,7 @@ RUN python -m venv /py && \
     apk add --update --no-cache --virtual .tmp-build-deps \
     
     #build-base = gcc, g++, make
-        build-base postgresql-dev musl-dev zlib zlib-dev && \
+        build-base postgresql-dev musl-dev zlib zlib-dev linux-headers && \
     
     #install requirements
     /py/bin/pip install -r /tmp/requirements.txt && \
@@ -81,11 +82,18 @@ RUN python -m venv /py && \
 
     #change the permissions of the media folder and static folder to 755
     # 755 = read, write, execute
-    chmod -R 755 /vol
+    chmod -R 755 /vol && \
+
+    # make scripts executable
+    chmod -R +x /scripts
+
 
 # specify the PATH to the virtual environment
-ENV PATH="/py/bin:$PATH"
+ENV PATH="/scripts:/py/bin:$PATH"
 
 # specify the user to run as
 #container will run as the last user specified
 USER django-user 
+
+# CMD is used to specify the default command to run when the container starts
+CMD ["run.sh"]
