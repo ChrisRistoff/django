@@ -18,8 +18,8 @@ ENV PYTHONUNBUFFERED 1
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
 COPY ./scripts /scripts
-#this is the app folder
 COPY ./app /app
+
 #tell docker where to run the commands
 WORKDIR /app
 #tell docker which ports to expose
@@ -85,7 +85,7 @@ RUN python -m venv /py && \
     chmod -R 755 /vol && \
 
     # make scripts executable
-    chmod -R +x /scripts
+    chmod -R a+x /scripts
 
 
 # specify the PATH to the virtual environment

@@ -17,7 +17,7 @@ services:
     #this is how we access the network when we want to connect to our server
     ports:
       - "8000:8000"
-    
+
     #mapping directories from system to container
     #the updates will be reflected in the running container in real time
     volumes:
@@ -35,6 +35,7 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+      - DEBUG=1
 
     #ensure that the "db" service starts before this service.
     depends_on:
