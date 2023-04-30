@@ -1,5 +1,5 @@
 #this is the base image we are using to build our image on top of it
-FROM python:3.9-alpine3.13
+FROM python:3.9.2-alpine3.13
 
 #this is the maintainer of the image (optional)
 #maintainer of the image is the person who created the image and is responsible for it
